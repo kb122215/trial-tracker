@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Free Trial Tracker</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Free Trial Tracker</h1>
+        <p class="tagline">Cancel before the free part ends.</p>
+      </header>
+
+      <section class="summary">
+        <div class="stat <%= endingSoonCount > 0 ? 'stat--warn' : '' %>">
+          <span class="stat__label">Ending in <%= days %> days</span>
+          <span class="stat__value"><%= endingSoonCount %></span>
+        </div>
+        <div class="stat <%= endingSoonCount > 0 ? 'stat--warn' : '' %>">
+          <span class="stat__label">Money you'd lose soon</span>
+          <span class="stat__value">$<%= endingSoonTotal.toFixed(2) %></span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">All active trials</span>
+          <span class="stat__value">$<%= activeTotal.toFixed(2) %></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Add a trial</h2>
+        <form action="/trials" method="POST" class="trial-form">
+          <label>Service<input type="text" name="service" placeholder="Netflix" required /></label>
+          <label>Start date<input type="date" name="startDate" required /></label>
+          <label>Trial length (days)<input type="number" name="trialLengthDays" min="1" max="365" value="7" required /></label>
+          <label>Price after trial ($)<input type="number" name="priceAfterTrial" min="0" step="0.01" placeholder="15.49" required /></label>
+          <label class="full">Cancel link<input type="url" name="cancelUrl" placeholder="https://example.com/account" /></label>
+          <button type="submit">Add trial</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Your trials</h2>
+        <p id="message" role="status"></p>
+
+        <% if (trials.length === 0) { %>
+          <p class="empty">No trials yet. Add one above, or run <code>npm run seed</code>.</p>
+        <% } else { %>
+          <ul class="trials">
+            <% trials.forEach(trial => {
+                 const ended = trial.daysLeft < 0
+                 const soon = !ended && trial.daysLeft <= days && trial.status === 'active'
+                 const state = trial.status === 'canceled' ? 'canceled' : ended ? 'ended' : soon ? 'soon' : 'ok'
+            %>
+              <li class="trial trial--<%= state %>" data-id="<%= trial._id %>">
+                <div class="trial__main">
+                  <strong><%= trial.service %></strong>
+                  <span class="trial__meta">
+                    $<%= trial.priceAfterTrial.toFixed(2) %> after trial ·
+                    ends <%= trial.endDate.toISOString().slice(0, 10) %>
+                  </span>
+                </div>
+                <span class="badge">
+                  <% if (state === 'canceled') { %>Canceled
+                  <% } else if (state === 'ended') { %>Trial ended
+                  <% } else if (trial.daysLeft === 0) { %>Ends today
+                  <% } else { %><%= trial.daysLeft %> day<%= trial.daysLeft === 1 ? '' : 's' %> left<% } %>
+                </span>
+                <div class="trial__actions">
+                  <% if (trial.cancelUrl) { %>
+                    <a href="<%= trial.cancelUrl %>" target="_blank" rel="noopener noreferrer">Cancel page</a>
+                  <% } %>
+                  <% if (trial.status === 'active') { %>
+                    <button class="mark-canceled" type="button">Mark canceled</button>
+                  <% } else { %>
+                    <button class="mark-active" type="button">Reactivate</button>
+                  <% } %>
+                  <button class="delete" type="button">Delete</button>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </section>
+    </main>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
