@@ -4,7 +4,7 @@ Free trials are easy to sign up for and easy to forget. This app keeps track of 
 
 ### 🔗 [Open the live app on Render](https://trial-tracker-r6bg.onrender.com/)
 
-![Free Trial Tracker dashboard] ((![alt text] image.png))
+![Free Trial Tracker dashboard] ![alt text](image-1.png)
 
 ## Features
 
